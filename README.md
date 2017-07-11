@@ -2,7 +2,6 @@
 
 RabbitMQ Queue driver for Laravel.
 
-======================
 
 ## Installation
 
