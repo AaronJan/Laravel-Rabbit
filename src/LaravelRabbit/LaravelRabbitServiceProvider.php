@@ -1,12 +1,12 @@
 <?php
 
-namespace VladimirYuldashev\LaravelQueueRabbitMQ;
+namespace LaravelRabbit;
 
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\ServiceProvider;
-use VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Connectors\RabbitMQConnector;
+use LaravelRabbit\Queue\Connectors\RabbitMQConnector;
 
-class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
+class LaravelRabbitServiceProvider extends ServiceProvider
 {
     /**
      * Register the service provider.
@@ -16,7 +16,7 @@ class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../../config/rabbitmq.php', 'queue.connections.rabbitmq'
+            __DIR__.'/../config/rabbitmq.php', 'queue.connections.rabbitmq'
         );
     }
 

@@ -1,8 +1,12 @@
 {
-  "name": "vladimir-yuldashev/laravel-queue-rabbitmq",
+  "name": "aaronjan/laravel-rabbit",
   "description": "RabbitMQ driver for Laravel Queue",
   "license": "MIT",
   "authors": [
+    {
+      "name": "Aaron Jan",
+      "email": "aaronjan@qq.com"
+    },
     {
       "name": "Vladimir Yuldashev",
       "email": "misterio92@gmail.com"
@@ -20,10 +24,9 @@
     "mockery/mockery": "^0.9.5"
   },
   "autoload": {
-    "psr-0": {
-      "VladimirYuldashev\\LaravelQueueRabbitMQ": "src/"
+    "psr-4": {
+      "LaravelRabbit": "src/LaravelRabbit/"
     }
   },
-  "minimum-stability": "dev",
   "prefer-stable": true
 }

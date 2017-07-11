@@ -1,6 +1,6 @@
 <?php
 
-namespace VladimirYuldashev\LaravelQueueRabbitMQ\Queue;
+namespace LaravelRabbit\Queue;
 
 use DateTime;
 use ErrorException;
@@ -12,7 +12,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
-use VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob;
+use LaravelRabbit\Queue\Jobs\RabbitMQJob;
 
 class RabbitMQQueue extends Queue implements QueueContract
 {
@@ -51,13 +51,13 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function __construct(AMQPStreamConnection $amqpConnection, $config)
     {
-        $this->connection = $amqpConnection;
-        $this->defaultQueue = $config['queue'];
-        $this->configQueue = $config['queue_params'];
-        $this->configExchange = $config['exchange_params'];
-        $this->declareExchange = $config['exchange_declare'];
+        $this->connection       = $amqpConnection;
+        $this->defaultQueue     = $config['queue'];
+        $this->configQueue      = $config['queue_params'];
+        $this->configExchange   = $config['exchange_params'];
+        $this->declareExchange  = $config['exchange_declare'];
         $this->declareBindQueue = $config['queue_declare_bind'];
-        $this->sleepOnError = isset($config['sleep_on_error']) ? $config['sleep_on_error'] : 5;
+        $this->sleepOnError     = isset($config['sleep_on_error']) ? $config['sleep_on_error'] : 5;
 
         $this->channel = $this->getChannel();
     }
@@ -71,7 +71,9 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function size($queue = null)
     {
-        // TODO: Implement size() method.
+        list(, $messageCount) = $this->channel->queue_declare($this->getQueueName($queue), true);
+
+        return $messageCount;
     }
 
     /**
@@ -204,10 +206,10 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     private function declareQueue($name)
     {
-        $name = $this->getQueueName($name);
+        $name     = $this->getQueueName($name);
         $exchange = $this->configExchange['name'] ?: $name;
 
-        if ($this->declareExchange && !in_array($exchange, $this->declaredExchanges, true)) {
+        if ($this->declareExchange && ! in_array($exchange, $this->declaredExchanges, true)) {
             // declare exchange
             $this->channel->exchange_declare(
                 $exchange,
@@ -220,7 +222,7 @@ class RabbitMQQueue extends Queue implements QueueContract
             $this->declaredExchanges[] = $exchange;
         }
 
-        if ($this->declareBindQueue && !in_array($name, $this->declaredQueues, true)) {
+        if ($this->declareBindQueue && ! in_array($name, $this->declaredQueues, true)) {
             // declare queue
             $this->channel->queue_declare(
                 $name,
@@ -247,14 +249,14 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     private function declareDelayedQueue($destination, $delay)
     {
-        $delay = $this->secondsUntil($delay);
-        $destination = $this->getQueueName($destination);
+        $delay               = $this->secondsUntil($delay);
+        $destination         = $this->getQueueName($destination);
         $destinationExchange = $this->configExchange['name'] ?: $destination;
-        $name = $this->getQueueName($destination).'_deferred_'.$delay;
-        $exchange = $this->configExchange['name'] ?: $destination;
+        $name                = $this->getQueueName($destination) . '_deferred_' . $delay;
+        $exchange            = $this->configExchange['name'] ?: $destination;
 
         // declare exchange
-        if (!in_array($exchange, $this->declaredExchanges, true)) {
+        if (! in_array($exchange, $this->declaredExchanges, true)) {
             $this->channel->exchange_declare(
                 $exchange,
                 $this->configExchange['type'],
@@ -265,7 +267,7 @@ class RabbitMQQueue extends Queue implements QueueContract
         }
 
         // declare queue
-        if (!in_array($name, $this->declaredQueues, true)) {
+        if (! in_array($name, $this->declaredQueues, true)) {
             $this->channel->queue_declare(
                 $name,
                 $this->configQueue['passive'],
@@ -328,7 +330,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function reportConnectionError($action, Exception $e)
     {
-        Log::error('AMQP error while attempting '.$action.': '.$e->getMessage());
+        Log::error('AMQP error while attempting ' . $action . ': ' . $e->getMessage());
 
         // If it's set to false, throw an error rather than waiting
         if ($this->sleepOnError === false) {
