@@ -30,12 +30,12 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * Creates a new instance of RabbitMQJob.
      *
-     * @param \Illuminate\Container\Container                             $container
+     * @param \Illuminate\Container\Container    $container
      * @param \LaravelRabbit\Queue\RabbitMQQueue $connection
-     * @param \PhpAmqpLib\Channel\AMQPChannel                             $channel
-     * @param string                                                      $queue
-     * @param \PhpAmqpLib\Message\AMQPMessage                             $message
-     * @param string                                                      $connectionName
+     * @param \PhpAmqpLib\Channel\AMQPChannel    $channel
+     * @param string                             $queue
+     * @param \PhpAmqpLib\Message\AMQPMessage    $message
+     * @param string                             $connectionName
      */
     public function __construct(
         Container $container,
@@ -44,12 +44,13 @@ class RabbitMQJob extends Job implements JobContract
         $queue,
         AMQPMessage $message,
         $connectionName
-    ) {
-        $this->container = $container;
-        $this->connection = $connection;
-        $this->channel = $channel;
-        $this->queue = $queue;
-        $this->message = $message;
+    )
+    {
+        $this->container      = $container;
+        $this->connection     = $connection;
+        $this->channel        = $channel;
+        $this->queue          = $queue;
+        $this->message        = $message;
         $this->connectionName = $connectionName;
     }
 

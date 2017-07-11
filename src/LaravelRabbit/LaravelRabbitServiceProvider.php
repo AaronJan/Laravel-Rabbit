@@ -16,7 +16,7 @@ class LaravelRabbitServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/rabbitmq.php', 'queue.connections.rabbitmq'
+            __DIR__ . '/../config/rabbitmq.php', 'queue.connections.rabbitmq'
         );
     }
 
@@ -28,7 +28,7 @@ class LaravelRabbitServiceProvider extends ServiceProvider
     public function boot()
     {
         /** @var QueueManager $queue */
-        $queue = $this->app['queue'];
+        $queue     = $this->app['queue'];
         $connector = new RabbitMQConnector();
 
         $queue->stopping(function () use ($connector) {
