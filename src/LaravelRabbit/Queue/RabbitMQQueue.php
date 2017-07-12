@@ -111,7 +111,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function createPayload($job, $data = '', $queue = null)
     {
-        return $this->getPayloadPacker()->pack($job, $data, $queue);
+        return $this->getPayloadPacker()->pack($job, $data, $this->getQueueName($queue));
     }
 
     /**

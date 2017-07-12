@@ -3,7 +3,7 @@
 namespace LaravelRabbit\Queue\Jobs;
 
 use Exception;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Database\DetectsDeadlocks;
 use Illuminate\Queue\Jobs\Job;
@@ -92,7 +92,7 @@ class RabbitMQJob extends Job implements JobContract
      */
     public function payload()
     {
-        return $this->getPayloadPacker()->unpack($this->getRawBody());
+        return $this->getPayloadPacker()->unpack($this->getRawBody(), $this->getQueue());
     }
 
     /**

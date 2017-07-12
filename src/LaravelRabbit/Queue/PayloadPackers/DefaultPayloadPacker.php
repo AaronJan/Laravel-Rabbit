@@ -91,9 +91,10 @@ class DefaultPayloadPacker implements PayloadPacker
 
     /**
      * @param $raw
+     * @param $queue
      * @return mixed
      */
-    public function unpack($raw)
+    public function unpack($raw, $queue)
     {
         return json_decode($raw, true);
     }
