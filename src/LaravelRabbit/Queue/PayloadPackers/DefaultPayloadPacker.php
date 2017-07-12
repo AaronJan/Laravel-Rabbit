@@ -27,12 +27,12 @@ class DefaultPayloadPacker implements PayloadPacker
     /**
      * Create a payload array from the given job and data.
      *
-     * @param  string $job
-     * @param  mixed  $data
-     * @param  string $queue
+     * @param        $job
+     * @param        $queue
+     * @param string $data
      * @return array
      */
-    protected function createPayloadArray($job, $data = '', $queue = null)
+    protected function createPayloadArray($job, $queue, $data = '')
     {
         return is_object($job)
             ? $this->createObjectPayload($job)
