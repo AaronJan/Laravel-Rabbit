@@ -4,10 +4,14 @@ namespace LaravelRabbit;
 
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\ServiceProvider;
+use LaravelRabbit\Contracts\PayloadPacker;
 use LaravelRabbit\Queue\Connectors\RabbitMQConnector;
 
 class LaravelRabbitServiceProvider extends ServiceProvider
 {
+    const CONFIG_PATH = __DIR__ . '/../config/laravel-rabbit.php';
+    const QUEUE_CONFIG_PATH = __DIR__ . '/../config/rabbitmq.php';
+
     /**
      * Register the service provider.
      *
@@ -15,9 +19,8 @@ class LaravelRabbitServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/rabbitmq.php', 'queue.connections.rabbitmq'
-        );
+        $this->mergeConfigFrom(static::QUEUE_CONFIG_PATH, 'queue.connections.rabbitmq');
+        $this->mergeConfigFrom(static::CONFIG_PATH, 'laravel-rabbit');
     }
 
     /**
@@ -27,9 +30,11 @@ class LaravelRabbitServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->publishConfig();
+
         /** @var QueueManager $queue */
         $queue     = $this->app['queue'];
-        $connector = new RabbitMQConnector();
+        $connector = new RabbitMQConnector($this->app);
 
         $queue->stopping(function () use ($connector) {
             $connector->connection()->close();
@@ -38,5 +43,24 @@ class LaravelRabbitServiceProvider extends ServiceProvider
         $queue->addConnector('rabbitmq', function () use ($connector) {
             return $connector;
         });
+
+        $this->app->singleton(PayloadPacker::class, function ($app) {
+            $packerClass = $app['config']->get('laravel-rabbit.payload_packer');
+
+            return $app->make($packerClass);
+        });
+    }
+
+    /**
+     *
+     */
+    protected function publishConfig()
+    {
+        if (function_exists('config_path')) {
+            $publishPath = config_path('laravel-rabbit.php');
+        } else {
+            $publishPath = base_path('config/laravel-rabbit.php');
+        }
+        $this->publishes([static::CONFIG_PATH => $publishPath], 'config');
     }
 }

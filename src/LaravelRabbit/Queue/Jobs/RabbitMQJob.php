@@ -9,6 +9,7 @@ use Illuminate\Database\DetectsDeadlocks;
 use Illuminate\Queue\Jobs\Job;
 use Illuminate\Queue\Jobs\JobName;
 use Illuminate\Support\Str;
+use LaravelRabbit\Contracts\PayloadPacker;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use LaravelRabbit\Queue\RabbitMQQueue;
@@ -82,6 +83,24 @@ class RabbitMQJob extends Job implements JobContract
 
             throw $exception;
         }
+    }
+
+    /**
+     * Get the decoded body of the job.
+     *
+     * @return array
+     */
+    public function payload()
+    {
+        return $this->getPayloadPacker()->unpack($this->getRawBody());
+    }
+
+    /**
+     * @return PayloadPacker
+     */
+    protected function getPayloadPacker()
+    {
+        return $this->container->make(PayloadPacker::class);
     }
 
     /**

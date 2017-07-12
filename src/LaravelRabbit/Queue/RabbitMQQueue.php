@@ -5,8 +5,11 @@ namespace LaravelRabbit\Queue;
 use DateTime;
 use ErrorException;
 use Exception;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
+use Illuminate\Queue\InvalidPayloadException;
 use Illuminate\Queue\Queue;
+use LaravelRabbit\Contracts\PayloadPacker;
 use Log;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -22,6 +25,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     const ATTEMPT_COUNT_HEADERS_KEY = 'attempts_count';
 
     protected $connection;
+    protected $container;
     protected $channel;
 
     protected $declareExchange;
@@ -46,12 +50,16 @@ class RabbitMQQueue extends Queue implements QueueContract
     private $correlationId;
 
     /**
-     * @param AMQPStreamConnection $amqpConnection
-     * @param array                $config
+     * RabbitMQQueue constructor.
+     *
+     * @param \PhpAmqpLib\Connection\AMQPStreamConnection $amqpConnection
+     * @param \Illuminate\Contracts\Container\Container   $container
+     * @param                                             $config
      */
-    public function __construct(AMQPStreamConnection $amqpConnection, $config)
+    public function __construct(AMQPStreamConnection $amqpConnection, Container $container, $config)
     {
         $this->connection       = $amqpConnection;
+        $this->container        = $container;
         $this->defaultQueue     = $config['queue'];
         $this->configQueue      = $config['queue_params'];
         $this->configExchange   = $config['exchange_params'];
@@ -87,7 +95,31 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function push($job, $data = '', $queue = null)
     {
-        return $this->pushRaw($this->createPayload($job, $data), $queue, []);
+        return $this->pushRaw($this->createPayload($job, $data, $queue), $queue, []);
+    }
+
+    /**
+     * Create a payload string from the given job and data.
+     *
+     * @param  string $job
+     * @param  mixed  $data
+     * @param  string $queue
+     *
+     * @return string
+     *
+     * @throws \Illuminate\Queue\InvalidPayloadException
+     */
+    protected function createPayload($job, $data = '', $queue = null)
+    {
+        return $this->getPayloadPacker()->pack($job, $data, $queue);
+    }
+
+    /**
+     * @return PayloadPacker
+     */
+    protected function getPayloadPacker()
+    {
+        return $this->container->make(PayloadPacker::class);
     }
 
     /**
@@ -326,6 +358,7 @@ class RabbitMQQueue extends Queue implements QueueContract
     /**
      * @param string    $action
      * @param Exception $e
+     *
      * @throws Exception
      */
     protected function reportConnectionError($action, Exception $e)
