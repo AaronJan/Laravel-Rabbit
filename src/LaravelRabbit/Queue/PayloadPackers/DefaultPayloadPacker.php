@@ -13,9 +13,9 @@ class DefaultPayloadPacker implements PayloadPacker
      * @param null   $queue
      * @return string
      */
-    public function pack($job, $data = '', $queue = null)
+    public function pack($job, $queue, $data = '')
     {
-        $payload = json_encode($this->createPayloadArray($job, $data, $queue));
+        $payload = json_encode($this->createPayloadArray($job, $queue, $data));
 
         if (JSON_ERROR_NONE !== json_last_error()) {
             throw new InvalidPayloadException(json_last_error());
